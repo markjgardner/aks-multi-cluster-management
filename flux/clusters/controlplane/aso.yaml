@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: azureserviceoperator-system
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: aso2
+  namespace: azureserviceoperator-system
+spec:
+  interval: 24h
+  url: https://raw.githubusercontent.com/Azure/azure-service-operator/main/v2/charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: aso2
+  namespace: azureserviceoperator-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: azure-service-operator
+      version: "2.x"
+      sourceRef:
+        kind: HelmRepository
+        name: aso2
+        namespace: azureserviceoperator-system
+      interval: 12h
+  values:
+    azureSubscriptionID: ${SUBID}
+    azureTenantID: ${TENANT} 
+    azureClientID: ${IDENTITY}
+    useWorkloadIdentityAuth: true
+    crdPattern: 'resources.azure.com/*;containerservice.azure.com/*;kubernetesconfiguration.azure.com/*'

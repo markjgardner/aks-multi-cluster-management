@@ -35,3 +35,8 @@ spec:
     azureClientID: ${IDENTITY}
     useWorkloadIdentityAuth: true
     crdPattern: 'resources.azure.com/*;containerservice.azure.com/*;kubernetesconfiguration.azure.com/*'
+  dependsOn:
+    - group: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: cert-manager
+      namespace: cert-manager

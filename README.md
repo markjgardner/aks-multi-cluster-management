@@ -35,7 +35,23 @@ az identity federated-credential create --name aso-federated-credential \
     --audiences "api://AzureADTokenExchange"
 ```
 
-### TODO: just install Flux and let it configure ASO for you
+Now we just need to install flux and point it at the controlplane folder to bootstrap ASO onto the cluster.
+
+```bash
+az k8s-configuration flux create \ 
+    -g $CONTROLPLANE_GROUP \ 
+    -c $ASO_CLUSTER \ 
+    -n cluster-config \ 
+    --namespace cluster-config \ 
+    -t managedClusters \ 
+    --scope cluster \ 
+    -u https://github.com/markjgardner/aks-multi-cluster-management \ 
+    --branch flux-dev \ 
+    --kustomization name=controlplane path=./flux/clusters/controlplane prune=true
+```
+
+
+### TODO: Remove this section
 Once the cluster is finished provisioning, we need to install ASO.
 
 ```bash

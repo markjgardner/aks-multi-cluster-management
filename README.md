@@ -23,13 +23,13 @@ ASO will need permission to create clusters and backing resources. To support th
 ```bash
 FLEET_GROUP=myfleet-rg
 ASO_IDENTITY_NAME=aso-controlplane-identity
-IDENTITY=$(az identity create -g $FLEET_GROUP -n $ASO_IDENTITY_NAME -o tsv --query clientId)
-az role assignment create --role "Contributor" --assignee $IDENTITY --scope /subscriptions/$SUBID/resourceGroups/$FLEET_GROUP
+IDENTITY=$(az identity create -g $CONTROLPLANE_GROUP -n $ASO_IDENTITY_NAME -o tsv --query clientId)
+az role assignment create --role "Contributor" --assignee $IDENTITY --scope /subscriptions/$SUBID/resourceGroups/$CONTROLPLANE_GROUP
 
 # Establish trust between the ASO cluster service account for ASO and the UMI
-ISSUER=$(az aks show -g $FLEET_HUB_GROUP -n $ASO_CLUSTER -o json | jq -r '.oidcIssuerProfile.issuerUrl')
+ISSUER=$(az aks show -g $CONTROLPLANE_GROUP -n $ASO_CLUSTER -o json | jq -r '.oidcIssuerProfile.issuerUrl')
 az identity federated-credential create --name aso-federated-credential \
-    --identity-name aso-aks-contributor -g $FLEET_HUB_GROUP \
+    --identity-name $ASO_IDENTITY_NAME -g $CONTROLPLANE_GROUP \
     --issuer $ISSUER \
     --subject "system:serviceaccount:azureserviceoperator-system:azureserviceoperator-default" \
     --audiences "api://AzureADTokenExchange"
@@ -38,16 +38,16 @@ az identity federated-credential create --name aso-federated-credential \
 Now we just need to install flux and point it at the controlplane folder to bootstrap ASO onto the cluster.
 
 ```bash
-az k8s-configuration flux create \ 
-    -g $CONTROLPLANE_GROUP \ 
-    -c $ASO_CLUSTER \ 
-    -n cluster-config \ 
-    --namespace cluster-config \ 
-    -t managedClusters \ 
-    --scope cluster \ 
-    -u https://github.com/markjgardner/aks-multi-cluster-management \ 
-    --branch flux-dev \ 
-    --kustomization name=controlplane path=./flux/clusters/controlplane prune=true
+az k8s-configuration flux create \
+    -g $CONTROLPLANE_GROUP \
+    -c $ASO_CLUSTER \
+    -n cluster-config \
+    --namespace cluster-config \
+    -t managedClusters \
+    --scope cluster \
+    -u https://github.com/markjgardner/aks-multi-cluster-management \
+    --branch flux-dev \
+    --kustomization name=controlplane path=./flux/controlplane prune=true
 ```
 
 

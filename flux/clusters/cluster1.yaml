@@ -5,7 +5,7 @@ metadata:
 spec:
   location: westus3
   owner:
-    name: 
+    name: myfleet-rg
   dnsPrefix: cluster1
   agentPoolProfiles:
     - name: system

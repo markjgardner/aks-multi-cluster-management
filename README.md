@@ -60,16 +60,24 @@ az k8s-configuration flux create \
 
 ## Deploy Workload Clusters
 
+First we will create a resource group to hold the workload clusters and delegate access to the ASO identity allowing it to create new clusters.
+
+```bash
+FLEET_GROUP=myfleet-rg
+az group create -n $FLEET_GROUP -l $LOCATION
+az role assignment create --role "Contributor" --assignee $IDENTITY --scope /subscriptions/$SUBID/resourceGroups/$FLEET_GROUP
+```
+
 Workload cluster definitions can be placed in the [/flux/clusters] folder. To deploy new clusters whenever a resource definition is pushed to this folder we need to add another kustomization to the controlplane.
 
 ```bash
-az k8s-configuration flux kustomization create \
+az k8s-configuration flux kustomization update \
     -g $CONTROLPLANE_GROUP \
     -c $ASO_CLUSTER \
     -n cluster-config \
     -t managedClusters \
     -k clusters \
-    --path ./flux/controlplane \
-    --prune=true \
+    --path ./flux/clusters \
+    --prune true \
     --interval 1m
 ```

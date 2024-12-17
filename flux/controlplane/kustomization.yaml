@@ -6,9 +6,6 @@ metadata:
 resources:
   - certmanager.yaml
   - aso.yaml
-labels:
-  - pairs:
-      toolkit.fluxcd.io/tenant: controlplane
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

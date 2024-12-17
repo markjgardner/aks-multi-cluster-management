@@ -19,6 +19,7 @@ metadata:
   namespace: cluster-config
 spec:
   interval: 30m
+  targetNamespace: azureserviceoperator-system
   chart:
     spec:
       chart: azure-service-operator

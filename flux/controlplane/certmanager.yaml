@@ -22,6 +22,7 @@ metadata:
   namespace: cluster-config
 spec:
   interval: 30m
+  targetNamespace: cert-manager
   chart:
     spec:
       chart: cert-manager
@@ -29,7 +30,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: cert-manager
-        namespace: cert-manager
+        namespace: cluster-config
       interval: 12h
   values:
     installCRDs: true

@@ -47,31 +47,7 @@ az k8s-configuration flux create \
     --scope cluster \
     -u https://github.com/markjgardner/aks-multi-cluster-management \
     --branch flux-dev \
-    --kustomization name=controlplane path=./flux/controlplane prune=true
-```
-
-
-### TODO: Remove this section
-Once the cluster is finished provisioning, we need to install ASO.
-
-```bash
-# Install Azure Service Operator on the cluster
-az aks get-credentials -g $FLEET_HUB_GROUP -n $ASO_CLUSTER --overwrite-existing
-
-# ASO requires cert manager
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.14.1/cert-manager.yaml
-
-# Helm install ASOv2
-helm repo add aso2 https://raw.githubusercontent.com/Azure/azure-service-operator/main/v2/charts
-kubectl wait --namespace cert-manager --for=condition=available --timeout=600s deployment/cert-manager
-helm upgrade --install aso2 aso2/azure-service-operator \
-        --create-namespace \
-        --namespace=azureserviceoperator-system \
-        --set azureSubscriptionID=$SUBID \
-        --set azureTenantID=$TENANT \
-        --set azureClientID=$IDENTITY \
-        --set useWorkloadIdentityAuth=true \
-        --set crdPattern='resources.azure.com/*;containerservice.azure.com/*;kubernetesconfiguration.azure.com/*'
+    --kustomization name=controlplane path=./flux/controlplane prune=true interval=1m
 ```
 
 ## Deploy Workload Clusters

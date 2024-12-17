@@ -10,7 +10,7 @@ spec:
   timeout: 2m
   sourceRef:
     kind: GitRepository
-    name: fleet-definitions
+    name: cluster-config
   path: ./flux/clusters
   prune: true
   wait: true

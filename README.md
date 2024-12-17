@@ -21,7 +21,6 @@ ASOID=$(az aks create -g $CONTROLPLANE_GROUP -n $ASO_CLUSTER --node-count 1 --en
 ASO will need permission to create clusters and backing resources. To support this, we will create a user-assigned managed identity and delegate Contributor rights to a single resource group where we will deploy our workload clusters.
 
 ```bash
-FLEET_GROUP=myfleet-rg
 ASO_IDENTITY_NAME=aso-controlplane-identity
 IDENTITY=$(az identity create -g $CONTROLPLANE_GROUP -n $ASO_IDENTITY_NAME -o tsv --query clientId)
 az role assignment create --role "Contributor" --assignee $IDENTITY --scope /subscriptions/$SUBID/resourceGroups/$CONTROLPLANE_GROUP
@@ -35,7 +34,7 @@ az identity federated-credential create --name aso-federated-credential \
     --audiences "api://AzureADTokenExchange"
 ```
 
-Now we just need to install flux and point it at the controlplane folder to bootstrap ASO onto the cluster.
+Now we just need to install flux and point it at the controlplane repository to bootstrap ASO onto the cluster.
 
 ```bash
 az k8s-configuration flux create \
@@ -47,7 +46,7 @@ az k8s-configuration flux create \
     --scope cluster \
     -u https://github.com/markjgardner/aks-multi-cluster-management \
     --branch flux-dev \
-    --kustomization name=controlplane path=./flux/controlplane prune=true interval=1m
+    --kustomization name=controlplane path=./flux/controlplane prune=true syncIntervalInSeconds=60
 ```
 
 ## Deploy Workload Clusters

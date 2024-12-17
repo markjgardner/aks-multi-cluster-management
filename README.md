@@ -36,11 +36,11 @@ az identity federated-credential create --name aso-federated-credential \
 
 TODO: store the tenant, subscription and clientid in the cluster as a secret
 ```bash
-kubectl create secret generic aso-identity -n cluster-config --from-literal=values.yaml='
-azureSubscriptionID: $TENANT
-azureTenantID: $SUBID
+kubectl create secret generic aso-identity -n cluster-config --from-literal=values.yaml="
+azureSubscriptionID: $SUBID
+azureTenantID: $TENANT
 azureClientID: $IDENTITY
-'
+"
 ```
 
 Now we just need to install flux and point it at the controlplane repository to bootstrap ASO onto the cluster.
@@ -55,7 +55,21 @@ az k8s-configuration flux create \
     --scope cluster \
     -u https://github.com/markjgardner/aks-multi-cluster-management \
     --branch flux-dev \
-    --kustomization name=controlplane path=./flux/controlplane prune=true syncIntervalInSeconds=60
+    --kustomization name=controlplane path=./flux/controlplane prune=true
 ```
 
 ## Deploy Workload Clusters
+
+Workload cluster definitions can be placed in the [/flux/clusters] folder. To deploy new clusters whenever a resource definition is pushed to this folder we need to add another kustomization to the controlplane.
+
+```bash
+az k8s-configuration flux kustomization create \
+    -g $CONTROLPLANE_GROUP \
+    -c $ASO_CLUSTER \
+    -n cluster-config \
+    -t managedClusters \
+    -k clusters \
+    --path ./flux/controlplane \
+    --prune=true \
+    --interval 1m
+```

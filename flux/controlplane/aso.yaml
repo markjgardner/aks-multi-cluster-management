@@ -29,10 +29,10 @@ spec:
         name: aso2
         namespace: cluster-config
       interval: 12h
+  valuesFrom:
+    - kind: Secret
+      name: aso-identity
   values:
-    azureSubscriptionID: ${SUBID}
-    azureTenantID: ${TENANT} 
-    azureClientID: ${IDENTITY}
     useWorkloadIdentityAuth: true
     crdPattern: 'resources.azure.com/*;containerservice.azure.com/*;kubernetesconfiguration.azure.com/*'
   dependsOn:

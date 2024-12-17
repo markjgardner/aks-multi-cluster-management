@@ -34,6 +34,15 @@ az identity federated-credential create --name aso-federated-credential \
     --audiences "api://AzureADTokenExchange"
 ```
 
+TODO: store the tenant, subscription and clientid in the cluster as a secret
+```bash
+kubectl create secret generic aso-identity -n cluster-config --from-literal=values.yaml='
+azureSubscriptionID: $TENANT
+azureTenantID: $SUBID
+azureClientID: $IDENTITY
+'
+```
+
 Now we just need to install flux and point it at the controlplane repository to bootstrap ASO onto the cluster.
 
 ```bash

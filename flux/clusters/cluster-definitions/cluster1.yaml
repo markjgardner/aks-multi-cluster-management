@@ -1,0 +1,70 @@
+apiVersion: containerservice.azure.com/v1api20240901
+kind: ManagedCluster
+metadata:
+  name: cluster1-aks
+spec:
+  location: westus3
+  owner:
+    name: myfleet-rg
+  dnsPrefix: cluster1
+  agentPoolProfiles:
+    - name: system
+      enableAutoScaling: true
+      minCount: 1
+      maxCount: 3
+      vmSize: standard_d2as_v6
+      osType: Linux
+      osSKU: AzureLinux
+      mode: System
+  identity:
+    type: SystemAssigned
+---
+apiVersion: kubernetesconfiguration.azure.com/v1api20230501
+kind: Extension
+metadata:
+  name: gitops
+spec:
+  autoUpgradeMinorVersion: true
+  extensionType: microsoft.flux
+  identity:
+    type: SystemAssigned
+  owner:
+    group: containerservice.azure.com
+    kind: ManagedCluster
+    name: cluster1-aks
+  scope:
+    cluster:
+      releaseNamespace: kube-system
+---
+apiVersion: kubernetesconfiguration.azure.com/v1api20230501
+kind: FluxConfiguration
+metadata:
+  name: flux-config
+spec:
+  gitRepository:
+    repositoryRef:
+      branch: main
+    url: https://github.com/Azure/gitops-flux2-kustomize-helm-mt
+  kustomizations:
+    apps: 
+      dependsOn: 
+        - infra
+      force: false
+      path: ./apps/staging
+      prune: true
+      syncIntervalInSeconds: 600
+      timeoutInSeconds: 600
+      wait: true
+    infra:
+      force: false
+      path: ./infrastructure
+      prune: true
+      syncIntervalInSeconds: 600
+      timeoutInSeconds: 600
+      wait: true
+  namespace: cluster-config
+  owner:
+    group: containerservice.azure.com
+    kind: ManagedCluster
+    name: cluster1-aks
+  sourceKind: GitRepository

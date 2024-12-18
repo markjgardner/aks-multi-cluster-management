@@ -59,7 +59,6 @@ spec:
       wait: true
     infra:
       force: false
-      force: false
       name: apps
       path: ./infrastructure
       prune: true

@@ -18,7 +18,6 @@ spec:
       mode: System
   identity:
     type: SystemAssigned
-  version: 1.30.6
 ---
 apiVersion: kubernetesconfiguration.azure.com/v1api20230501
 kind: Extension
@@ -51,7 +50,6 @@ spec:
       dependsOn: 
         - infra
       force: false
-      name: apps
       path: ./apps/staging
       prune: true
       syncIntervalInSeconds: 600
@@ -59,7 +57,6 @@ spec:
       wait: true
     infra:
       force: false
-      name: apps
       path: ./infrastructure
       prune: true
       syncIntervalInSeconds: 600

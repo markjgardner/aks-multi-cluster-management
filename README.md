@@ -34,8 +34,9 @@ az identity federated-credential create --name aso-federated-credential \
     --audiences "api://AzureADTokenExchange"
 ```
 
-TODO: store the tenant, subscription and clientid in the cluster as a secret
+In order for ASO to use workload identity for resource management, it needs to know the subscription, tenant and clientID to use. We will store those in the cluster as a secret which we can reference in the ASO deployment.
 ```bash
+az aks get-credenitals -g $CONTROLPLANE_GROUP -n $ASO_CLUSTER --overwrite-existing
 kubectl create secret generic aso-identity -n cluster-config --from-literal=values.yaml="
 azureSubscriptionID: $SUBID
 azureTenantID: $TENANT

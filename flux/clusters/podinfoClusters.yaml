@@ -1,0 +1,29 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: aso-cluster-charts
+spec:
+  interval: 5m
+  url: oci://ghcr.io/markjgardner/aks-multi-cluster-management/podinfocluster
+  layerSelector:
+    mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+    operation: copy
+  ref:
+    semver: "0.0.3"
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: podinfostaging
+spec:
+  releaseName: podinfo-staging
+  targetNamespace: clusters
+  chartRef:
+    kind: OCIRepository
+    name: aso-cluster-charts
+  interval: 5m
+  values:
+    clusterCount: 1
+    location: eastus2
+    flux:
+      kustomizationPath: ./apps/staging

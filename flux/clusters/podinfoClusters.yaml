@@ -23,7 +23,6 @@ spec:
   chartRef:
     kind: OCIRepository
     name: aso-cluster-charts
-
   interval: 5m
   values:
     clusterCount: 1

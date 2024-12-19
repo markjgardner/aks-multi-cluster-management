@@ -18,6 +18,7 @@ spec:
       mode: System
   identity:
     type: SystemAssigned
+  dnsPrefix: {{ $.Release.Name }}-{{ $i }}-aks
 ---
 apiVersion: kubernetesconfiguration.azure.com/v1api20230501
 kind: Extension

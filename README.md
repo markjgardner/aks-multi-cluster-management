@@ -55,7 +55,7 @@ az k8s-configuration flux create \
     -t managedClusters \
     --scope cluster \
     -u https://github.com/markjgardner/aks-multi-cluster-management \
-    --branch flux-dev \
+    --branch main \
     --kustomization name=controlplane path=./flux/controlplane prune=true
 ```
 

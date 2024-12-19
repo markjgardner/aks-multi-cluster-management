@@ -1,0 +1,10 @@
+# How many clusters to create
+clusterCount: 1
+
+# Cluster configuration
+location: eastus2
+
+# Flux configuration
+flux:
+  repository: https://github.com/Azure/gitops-flux2-kustomize-helm-mt
+  kustomizationPath: ./apps/staging

@@ -4,4 +4,4 @@ namespace: clusters
 resources:
   - namespace.yaml
   - group.yaml
-  - ./cluster-definitions/cluster1.yaml
+  - podinfoClusters.yaml

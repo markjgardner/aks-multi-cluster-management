@@ -1,12 +1,12 @@
+{{- range $i := until (int .Values.clusterCount) }}
 apiVersion: containerservice.azure.com/v1api20240901
 kind: ManagedCluster
 metadata:
-  name: cluster1-aks
+  name: {{ $.Release.Name }}-{{ $i }}-aks
 spec:
-  location: westus3
+  location: {{ $.Values.location }}
   owner:
     name: myfleet-rg
-  dnsPrefix: cluster1
   agentPoolProfiles:
     - name: system
       enableAutoScaling: true
@@ -31,7 +31,7 @@ spec:
   owner:
     group: containerservice.azure.com
     kind: ManagedCluster
-    name: cluster1-aks
+    name: {{ $.Release.Name }}-{{ $i }}-aks
   scope:
     cluster:
       releaseNamespace: kube-system
@@ -44,13 +44,13 @@ spec:
   gitRepository:
     repositoryRef:
       branch: main
-    url: https://github.com/Azure/gitops-flux2-kustomize-helm-mt
+    url: {{ $.Values.flux.repository }}
   kustomizations:
     apps: 
       dependsOn: 
         - infra
       force: false
-      path: ./apps/staging
+      path: {{ $.Values.flux.kustomizationPath }}
       prune: true
       syncIntervalInSeconds: 600
       timeoutInSeconds: 600
@@ -66,5 +66,6 @@ spec:
   owner:
     group: containerservice.azure.com
     kind: ManagedCluster
-    name: cluster1-aks
+    name: {{ $.Release.Name }}-{{ $i }}-aks
   sourceKind: GitRepository
+{{- end }}

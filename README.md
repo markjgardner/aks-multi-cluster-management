@@ -72,7 +72,7 @@ az role assignment create --role "Contributor" --assignee $IDENTITY --scope /sub
 Workload cluster definitions can be placed in the [/flux/clusters] folder. To deploy new clusters whenever a resource definition is pushed to this folder we need to add another kustomization to the controlplane.
 
 ```bash
-az k8s-configuration flux kustomization update \
+az k8s-configuration flux kustomization create \
     -g $CONTROLPLANE_GROUP \
     -c $ASO_CLUSTER \
     -n cluster-config \

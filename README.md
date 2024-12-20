@@ -1,5 +1,5 @@
 # Multi-Cluster AKS Management using Flux and ASO
-This repo provides a sample implementation using [Flux](hhttps://fluxcd.io/) and [Azure Service Operator](https://azure.github.io/azure-service-operator/) to manage a dynamic fleet of Azure Kubernetes Clusters.
+This repo provides a sample implementation using [Flux](https://fluxcd.io/) and [Azure Service Operator](https://azure.github.io/azure-service-operator/) to manage a dynamic fleet of Azure Kubernetes Clusters.
 
 ## Architecture
 ![An architectural design showing the controlplane, dataplane, and how both platform and application teams interact with the two](architecture.png "AKS controlplane through gitops")

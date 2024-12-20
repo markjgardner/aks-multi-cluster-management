@@ -189,7 +189,7 @@ spec:
     clusterCount: 3
     location: eastus2
     flux:
-      kustomizationPath: ./apps/prod
+      kustomizationPath: ./apps/production
 ```
 
 ## Additional Notes

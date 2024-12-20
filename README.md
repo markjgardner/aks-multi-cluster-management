@@ -1,7 +1,8 @@
 # Multi-Cluster AKS Management using Flux and ASO
-This repo provides a sample implementation using [Flux](https://fluxcd.io/) and [Azure Service Operator](https://azure.github.io/azure-service-operator/) to manage a dynamic fleet of Azure Kubernetes Clusters.
+This repo provides a sample implementation using [Flux](hhttps://fluxcd.io/) and [Azure Service Operator](https://azure.github.io/azure-service-operator/) to manage a dynamic fleet of Azure Kubernetes Clusters.
 
-## TODO: Architecture
+## Architecture
+![An architectural design showing the controlplane, dataplane, and how both platform and application teams interact with the two](architecture.png "AKS controlplane through gitops")
 
 ## Build the Control Plane Cluster
 In order to bootstrap the fleet we need our first ASO cluster. This cluster will be the proverbial chicken that lays the first egg. To start we will deploy a basic AKS cluster.
@@ -85,7 +86,7 @@ az k8s-configuration flux kustomization create \
 
 ## Cluster Definitions as Helm Charts
 
-If we are thinking about our clusters as just abstract compute platforms for running our applications, the next logical leap is to just create templates for defining those environments. That way we can stamp out new environments and scale up and down easily by just reusing the template to create more or fewer clusters. [Helm](https://helm.sh) is one of the most robust templating tools for kubernetes resources and is well supported by Flux. So, let's see what a cluster helmchart looks like.
+If we think of our clusters as just abstract compute environments for hosting applications, the next logical leap is to create templates for defining those environments. In this way we can stamp out new environments and scale up and down easily by reusing the template to create more or fewer clusters. [Helm](https://helm.sh) is one of the most robust templating tools for kubernetes resources and is natively supported by Flux. So, let's look at a very basic example of a cluster defined as a helm chart.
 
 > [!NOTE]
 > The full source for this chart can be found under [/charts/podinfocluster](/charts/podinfocluster).
@@ -93,9 +94,9 @@ If we are thinking about our clusters as just abstract compute platforms for run
 apiVersion: containerservice.azure.com/v1api20240901
 kind: ManagedCluster
 metadata:
-  name: {{ $.Release.Name }}-{{ $i }}-aks
+  name: {{ .Release.Name }}-aks
 spec:
-  location: {{ $.Values.location }}
+  location: {{ .Values.location }}
   owner:
     name: myfleet-rg
   agentPoolProfiles:
@@ -109,10 +110,10 @@ spec:
       mode: System
   identity:
     type: SystemAssigned
-  dnsPrefix: {{ $.Release.Name }}-{{ $i }}-aks
+  dnsPrefix: {{ .Release.Name }}-aks
 ```
 
-These workload clusters can be easily configured with their own flux configurations that load the application(s) onto the clusters.
+These workload clusters can be easily defined with their own `FluxConfiguration` which will configure the cluster with the appropriate workload resources.
 ```yaml
 apiVersion: kubernetesconfiguration.azure.com/v1api20230501
 kind: FluxConfiguration
@@ -122,20 +123,11 @@ spec:
   gitRepository:
     repositoryRef:
       branch: main
-    url: {{ $.Values.flux.repository }}
+    url: {{ .Values.flux.repository }}
   kustomizations:
     apps: 
-      dependsOn: 
-        - infra
       force: false
-      path: {{ $.Values.flux.kustomizationPath }}
-      prune: true
-      syncIntervalInSeconds: 600
-      timeoutInSeconds: 600
-      wait: true
-    infra:
-      force: false
-      path: ./infrastructure
+      path: {{ .Values.flux.kustomizationPath }}
       prune: true
       syncIntervalInSeconds: 600
       timeoutInSeconds: 600
@@ -144,11 +136,11 @@ spec:
   owner:
     group: containerservice.azure.com
     kind: ManagedCluster
-    name: {{ $.Release.Name }}-{{ $i }}-aks
+    name: {{ .Release.Name }}-aks
   sourceKind: GitRepository
 ```
 
-To deploy instances of workload clusters, we just need to create a HelmRelease within our controlplane repo. Notice that you can create additional environments by defining new releases of the same chart. Scaling a particular instance (adding/removing clusters) can be accomplished by providing a target cluster count and letting helm render the appropriate number of resources on the controlplane cluster.
+To deploy instances of this workload cluster, we just need to create a `HelmRelease` within our controlplane repo. Notice that you can create additional environments by defining new releases of the same chart. 
 
 ```yaml
 apiVersion: helm.toolkit.fluxcd.io/v2
@@ -164,8 +156,40 @@ spec:
     name: aso-cluster-charts
   interval: 5m
   values:
-    clusterCount: 3
     location: eastus2
     flux:
       kustomizationPath: ./apps/production
 ```
+
+Scaling a release (adding/removing clusters) can be accomplished by parameterizing the desired number of clusters and leveraging the builtin capabilities of helm to render the appropriate number of resources on the controlplane cluster.
+```yaml
+{{- range $i := until (int .Values.clusterCount) }}
+apiVersion: containerservice.azure.com/v1api20240901
+kind: ManagedCluster
+...
+```
+
+As an example, this `HelmRelease` will deploy a production version of our PodInfo cluster definition across three AKS clusters. Executing this deployment is as simple as adding the following block to [/flux/clusters/podinfoClusters.yaml](/flux/clusters/podinfoClusters.yaml)
+```yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: podinfostaging
+  namespace: cluster-config
+spec:
+  releaseName: podinfo-staging
+  targetNamespace: clusters
+  chartRef:
+    kind: OCIRepository
+    name: aso-cluster-charts
+  interval: 5m
+  values:
+    clusterCount: 3
+    location: eastus2
+    flux:
+      kustomizationPath: ./apps/prod
+```
+
+## Additional Notes
+
+This example focuses solely on managing AKS clusters through ASO, however, it should be noted that any Azure resource [supported by ASO](https://azure.github.io/azure-service-operator/reference/) can be managed in this model. For example, a workload chart could contain the definition for the application cluster as well as external dependencies such as Azure SQL, Azure Storage, Application Insights, etc.

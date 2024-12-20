@@ -47,6 +47,8 @@ azureClientID: $IDENTITY
 
 Now we just need to install flux and point it at the controlplane repository to bootstrap ASO onto the cluster.
 
+> [!NOTE]
+> Replace the url below with that of your fork
 ```bash
 az k8s-configuration flux create \
     -g $CONTROLPLANE_GROUP \

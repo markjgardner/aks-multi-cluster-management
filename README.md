@@ -146,10 +146,10 @@ To deploy instances of this workload cluster, we just need to create a `HelmRele
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: podinfoprod
+  name: podinfostage
   namespace: cluster-config
 spec:
-  releaseName: podinfo-prod
+  releaseName: podinfo-stage
   targetNamespace: clusters
   chartRef:
     kind: OCIRepository
@@ -157,8 +157,9 @@ spec:
   interval: 5m
   values:
     location: eastus2
+    clusterCount: 1
     flux:
-      kustomizationPath: ./apps/production
+      kustomizationPath: ./apps/staging
       repository: https://github.com/Azure/gitops-flux2-kustomize-helm-mt
 ```
 
@@ -175,10 +176,10 @@ As an example, this `HelmRelease` will deploy a production version of our PodInf
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: podinfostaging
+  name: podinfoprod
   namespace: cluster-config
 spec:
-  releaseName: podinfo-staging
+  releaseName: podinfo-prod
   targetNamespace: clusters
   chartRef:
     kind: OCIRepository

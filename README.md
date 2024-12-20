@@ -159,6 +159,7 @@ spec:
     location: eastus2
     flux:
       kustomizationPath: ./apps/production
+      repository: https://github.com/Azure/gitops-flux2-kustomize-helm-mt
 ```
 
 Scaling a release (adding/removing clusters) can be accomplished by parameterizing the desired number of clusters and leveraging the builtin capabilities of helm to render the appropriate number of resources on the controlplane cluster.

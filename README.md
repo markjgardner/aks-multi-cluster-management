@@ -1,11 +1,11 @@
 # Multi-Cluster AKS Management using Flux and ASO
-This repo provides a sample implementation using [Flux](https://fluxcd.io/) and [Azure Service Operator](https://azure.github.io/azure-service-operator/) to manage a dynamic fleet of Azure Kubernetes Clusters.
+This repo provides a sample implementation using [Flux](https://fluxcd.io/) and [Azure Service Operator](https://azure.github.io/azure-service-operator/)(ASO) to manage a dynamic fleet of Azure Kubernetes Clusters(AKS). This guide is geared towards organizaitons that are interested in managing a number of AKS clusters using a declarative model with kubernetes as the preferred interface for operations and administration. By leveraging the managed capabilities available on Azure such as [AKS](https://learn.microsoft.com/azure/aks/), the [GitOps Flux extension for AKS](https://learn.microsoft.com/azure/azure-arc/kubernetes/tutorial-use-gitops-flux2) and [Managed Identities](https://learn.microsoft.com/azure/aks/workload-identity-overview), we are able to minimize the operational overhead of running a complex fleet and very quickly build a large number of kubernetes clusters each tailored to a particular purpose.
 
 ## Architecture
 ![An architectural design showing the controlplane, dataplane, and how both platform and application teams interact with the two](architecture.png "AKS controlplane through gitops")
 
 ## Build the Control Plane Cluster
-In order to bootstrap the fleet we need our first ASO cluster. This cluster will be the proverbial chicken that lays the first egg. To start we will deploy a basic AKS cluster.
+In order to bootstrap the fleet we need our first ASO cluster. This cluster will be the proverbial chicken that lays the first egg. This is a one-time imperative task that can be made fully declarative once we bootstrap the system. If you already have a k8s cluster, please follow the instructions for [installing and configuring ASO](https://azure.github.io/azure-service-operator/guide/). For the purposes of this guide, we will start by deploying a basic AKS cluster.
 
 ```bash
 LOCATION=eastus2
@@ -19,12 +19,11 @@ az group create -n $CONTROLPLANE_GROUP -l $LOCATION
 ASOID=$(az aks create -g $CONTROLPLANE_GROUP -n $ASO_CLUSTER --node-count 1 --enable-oidc-issuer --enable-workload-identity --generate-ssh-keys -o tsv --query id)
 ```
 
-ASO will need permission to create clusters and backing resources. To support this, we will create a user-assigned managed identity and delegate Contributor rights to a single resource group where we will deploy our workload clusters.
+ASO will need permission to create clusters and backing resources. To support this, we will create a user-assigned managed identity and configure it as a workload identity federated to the controlplane cluster.
 
 ```bash
 ASO_IDENTITY_NAME=aso-controlplane-identity
 IDENTITY=$(az identity create -g $CONTROLPLANE_GROUP -n $ASO_IDENTITY_NAME -o tsv --query clientId)
-az role assignment create --role "Contributor" --assignee $IDENTITY --scope /subscriptions/$SUBID/resourceGroups/$CONTROLPLANE_GROUP
 
 # Establish trust between the ASO cluster service account for ASO and the UMI
 ISSUER=$(az aks show -g $CONTROLPLANE_GROUP -n $ASO_CLUSTER -o json | jq -r '.oidcIssuerProfile.issuerUrl')
@@ -35,7 +34,7 @@ az identity federated-credential create --name aso-federated-credential \
     --audiences "api://AzureADTokenExchange"
 ```
 
-In order for ASO to use workload identity for resource management, it needs to know the subscription, tenant and clientID to use. We will store those in the cluster as a secret which we can reference in the ASO deployment.
+In order for ASO to use the workload identity for resource management, it needs to know the subscription, tenant and clientID to use. We will store those in the cluster as a secret which we can reference in the ASO deployment.
 ```bash
 az aks get-credenitals -g $CONTROLPLANE_GROUP -n $ASO_CLUSTER --overwrite-existing
 kubectl create secret generic aso-identity -n cluster-config --from-literal=values.yaml="
@@ -61,6 +60,8 @@ az k8s-configuration flux create \
     --branch main \
     --kustomization name=controlplane path=./flux/controlplane prune=true
 ```
+
+We now have a controlplane cluster running ASO and using flux to pull its configuration from our platform repository. The next step will be to enable this cluster to create other clusters and configure it to do so automatically based on declarative templates that describe different types of workload clusters.
 
 ## Deploy Workload Clusters
 

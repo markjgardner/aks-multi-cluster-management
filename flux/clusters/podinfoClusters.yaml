@@ -29,21 +29,3 @@ spec:
     location: eastus2
     flux:
       kustomizationPath: ./apps/staging
----
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
-  name: podinfoprod
-  namespace: cluster-config
-spec:
-  releaseName: podinfo-staging
-  targetNamespace: clusters
-  chartRef:
-    kind: OCIRepository
-    name: aso-cluster-charts
-  interval: 5m
-  values:
-    clusterCount: 3
-    location: eastus2
-    flux:
-      kustomizationPath: ./apps/prod

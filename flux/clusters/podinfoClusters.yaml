@@ -25,7 +25,7 @@ spec:
     name: aso-cluster-charts
   interval: 5m
   values:
-    clusterCount: 1
+    clusterCount: 3
     location: eastus2
     flux:
       kustomizationPath: ./apps/staging

@@ -70,7 +70,6 @@ First we will create a resource group to hold the workload clusters and delegate
 
 ```bash
 FLEET_GROUP=rg-k8s-fleet
-az group create -n $FLEET_GROUP -l $LOCATION
 az role assignment create --role "Contributor" --assignee $IDENTITY --scope /subscriptions/$SUBID/resourceGroups/$FLEET_GROUP
 ```
 

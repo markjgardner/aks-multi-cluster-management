@@ -23,7 +23,7 @@ spec:
 apiVersion: kubernetesconfiguration.azure.com/v1api20230501
 kind: Extension
 metadata:
-  name: gitops
+  name: {{ $.Release.Name }}-{{ $i }}-gitops
 spec:
   autoUpgradeMinorVersion: true
   extensionType: microsoft.flux
@@ -40,7 +40,7 @@ spec:
 apiVersion: kubernetesconfiguration.azure.com/v1api20230501
 kind: FluxConfiguration
 metadata:
-  name: flux-config
+  name: {{ $.Release.Name }}-{{ $i }}-flux
 spec:
   gitRepository:
     repositoryRef:

@@ -26,6 +26,6 @@ spec:
   interval: 5m
   values:
     clusterCount: 3
-    location: eastus2
+    location: centralus
     flux:
       kustomizationPath: ./apps/staging

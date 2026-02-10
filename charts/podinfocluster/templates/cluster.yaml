@@ -6,7 +6,7 @@ metadata:
 spec:
   location: {{ $.Values.location }}
   owner:
-    name: myfleet-rg
+    name: rg-k8s-fleet
   agentPoolProfiles:
     - name: system
       enableAutoScaling: true

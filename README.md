@@ -8,7 +8,7 @@ This repo provides a sample implementation using [Flux](https://fluxcd.io/) and 
 In order to bootstrap the fleet we need our first ASO cluster. This cluster will be the proverbial chicken that lays the first egg. This is a one-time imperative task that can be made fully declarative once we bootstrap the system. If you already have a k8s cluster, please follow the instructions for [installing and configuring ASO](https://azure.github.io/azure-service-operator/guide/). For the purposes of this guide, we will start by deploying a basic AKS cluster.
 
 ```bash
-LOCATION=eastus2
+LOCATION=centralus
 CONTROLPLANE_GROUP=controlplane-rg
 ASO_CLUSTER=asocluster-aks
 SUBID=$(az account show -o tsv --query id)
@@ -58,7 +58,7 @@ az k8s-configuration flux create \
     -t managedClusters \
     --scope cluster \
     -u https://github.com/markjgardner/aks-multi-cluster-management \
-    --branch main \
+    --branch fleet-demo \
     --kustomization name=controlplane path=./flux/controlplane prune=true
 ```
 
@@ -69,7 +69,7 @@ We now have a controlplane cluster running ASO and using flux to pull its config
 First we will create a resource group to hold the workload clusters and delegate access to the ASO identity allowing it to create new clusters.
 
 ```bash
-FLEET_GROUP=myfleet-rg
+FLEET_GROUP=rg-k8s-fleet
 az group create -n $FLEET_GROUP -l $LOCATION
 az role assignment create --role "Contributor" --assignee $IDENTITY --scope /subscriptions/$SUBID/resourceGroups/$FLEET_GROUP
 ```

@@ -69,4 +69,5 @@ spec:
     kind: ManagedCluster
     name: {{ $.Release.Name }}-{{ $i }}-aks
   sourceKind: GitRepository
+---
 {{- end }}

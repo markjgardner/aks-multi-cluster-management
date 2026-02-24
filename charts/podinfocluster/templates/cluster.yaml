@@ -6,7 +6,7 @@ metadata:
 spec:
   location: {{ $.Values.location }}
   owner:
-    name: myfleet-rg
+    name: rg-k8s-fleet
   agentPoolProfiles:
     - name: system
       enableAutoScaling: true
@@ -23,7 +23,7 @@ spec:
 apiVersion: kubernetesconfiguration.azure.com/v1api20230501
 kind: Extension
 metadata:
-  name: gitops
+  name: {{ $.Release.Name }}-{{ $i }}-gitops
 spec:
   autoUpgradeMinorVersion: true
   extensionType: microsoft.flux
@@ -40,7 +40,7 @@ spec:
 apiVersion: kubernetesconfiguration.azure.com/v1api20230501
 kind: FluxConfiguration
 metadata:
-  name: flux-config
+  name: {{ $.Release.Name }}-{{ $i }}-flux
 spec:
   gitRepository:
     repositoryRef:
@@ -69,4 +69,5 @@ spec:
     kind: ManagedCluster
     name: {{ $.Release.Name }}-{{ $i }}-aks
   sourceKind: GitRepository
+---
 {{- end }}
